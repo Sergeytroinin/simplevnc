@@ -149,6 +149,7 @@ Screen.prototype.removeHandlers = function() {
   this._canvas.removeEventListener('mouseup', this._onmouseup);
   this._canvas.removeEventListener('mousedown', this._onmousedown);
   this._canvas.removeEventListener('mousemove', this._onmousemove);
+  this._canvas.removeEventListener('mousewheel', this._onmousewheel);
   document.removeEventListener('keydown', this._onkeydown);
   document.removeEventListener('keyup', this._onkeyup);
   window.removeEventListener('resize', this._scale)
