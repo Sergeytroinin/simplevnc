@@ -104,6 +104,22 @@ Screen.prototype._addHandlers = function() {
     self._event.emit('mouseEvent', self._toScreenX(e.pageX) , self._toScreenY(e.pageY), state)
     e.preventDefault();
   });
+  this._canvas.addEventListener('mousewheel', this._onmousewheel = function (e) {
+
+    var firstState,
+        secondState = 0;
+
+    if(e.deltaY < 0){
+      firstState = 8;
+    } else{
+      firstState = 10000
+    }
+
+    self._event.emit('mouseEvent', self._toScreenX(e.pageX) , self._toScreenY(e.pageY), firstState);
+    self._event.emit('mouseEvent', self._toScreenX(e.pageX) , self._toScreenY(e.pageY), secondState);
+
+    e.preventDefault();
+  });
 
   /* key events */
   document.addEventListener('keydown', this._onkeydown = function (e) {
