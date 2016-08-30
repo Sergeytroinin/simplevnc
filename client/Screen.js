@@ -21,33 +21,91 @@ function Screen(canvas) {
   this._scale();
   this.on = this._event.on.bind(this._event);
   this.removeListener = this._event.removeListener.bind(this._event);
+
+  this.queue = [];
+
+  var self = this;
+
+  setInterval(function(){
+
+    var item = self.queue[0];
+
+    if(item && item.data){
+      var data = item.data;
+      self._context.drawImage(data.img, data.x, data.y, data.width, data.height);
+      self.queue.shift();
+    }
+
+
+
+  }, 40)
+
 }
 
+Screen.prototype.putIntoQueue = function(id, data){
+
+  var item = null;
+
+  this.queue.map(function(i){
+
+    if(i.id === id){
+      item = i;
+    }
+
+  });
+
+  if(item){
+    item.data = data;
+  }
+
+};
+
 Screen.prototype.drawFrame = function(rect) {
+
+  var id = Date.now();
+
+  var frameObject = {
+    id: id,
+    data: null
+  };
+
+  this.queue.push(frameObject);
+
   var image = rect.image;
   var now = +new Date();
   switch(image.encoding) {
-  case 'raw':
-    var imageData = this._context.createImageData(rect.width, rect.height);
-    imageData.data.set(new Uint8Array(image.data));
-    this._context.putImageData(imageData, rect.x, rect.y);
-    var foo = +new Date();
-    var size = rect.width * rect.height;
-    break;
+    case 'raw':
+      var imageData = this._context.createImageData(rect.width, rect.height);
+      imageData.data.set(new Uint8Array(image.data));
+      this._context.putImageData(imageData, rect.x, rect.y);
+      var foo = +new Date();
+      var size = rect.width * rect.height;
+      break;
 
-  case 'png':
-  case 'jpeg':
-    var img = new Image();
-    var self = this;
-    img.width = rect.width;
-    img.height = rect.height;
-    img.src = 'data:image/' + image.encoding + ';base64,' + rect.image.data;
-    img.onload = function () {
-      self._context.drawImage(img, rect.x, rect.y, rect.width, rect.height);
-    };
-    break;
-  default:
-    throw new Error('unknown rect encoding:', image.encoding);
+    case 'png':
+    case 'jpeg':
+      var img = new Image();
+      var self = this;
+      img.width = rect.width;
+      img.height = rect.height;
+      img.src = 'data:image/' + image.encoding + ';base64,' + rect.image.data;
+      img.onload = function () {
+
+        var data = {
+          img: img,
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height
+        };
+
+        self.putIntoQueue(id, data);
+
+        self._context.drawImage(img, rect.x, rect.y, rect.width, rect.height);
+      };
+      break;
+    default:
+      throw new Error('unknown rect encoding:', image.encoding);
   }
 };
 
@@ -58,9 +116,9 @@ Screen.prototype.copyFrame = function(rect) {
 
 Screen.prototype._scale = function() {
   var canvas = this._canvas,
-    sw = (window.innerWidth * 0.9) / canvas.width,
-    sh = (window.innerHeight * 0.9) / canvas.height,
-    s = Math.min(sw, sh);
+      sw = (window.innerWidth * 0.9) / canvas.width,
+      sh = (window.innerHeight * 0.9) / canvas.height,
+      s = Math.min(sw, sh);
 
   this._scaleFactor = s;
   this._dx = (window.innerWidth - canvas.width * s) / 2 / s;
