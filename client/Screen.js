@@ -36,8 +36,6 @@ function Screen(canvas) {
       self.queue.shift();
     }
 
-
-
   }, 40)
 
 }
@@ -57,6 +55,21 @@ Screen.prototype.putIntoQueue = function(id, data){
   if(item){
     item.data = data;
   }
+
+};
+
+Screen.prototype.removeBrokenFrame = function(id){
+  var index = null;
+
+  this.queue.map(function(i){
+
+    if(i.id === id){
+      index = i;
+    }
+
+  });
+
+  this.queue.splice(index, 1);
 
 };
 
@@ -102,6 +115,9 @@ Screen.prototype.drawFrame = function(rect) {
         self.putIntoQueue(id, data);
 
         self._context.drawImage(img, rect.x, rect.y, rect.width, rect.height);
+      };
+      img.onerror = function(){
+        self.removeBrokenFrame(id);
       };
       break;
     default:
